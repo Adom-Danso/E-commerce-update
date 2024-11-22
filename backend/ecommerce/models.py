@@ -1,12 +1,12 @@
 from . import db
-# from flask_login import UserMixin, current_user
 from datetime import datetime
 from werkzeug.security import check_password_hash, generate_password_hash
 import uuid
+from flask_login import UserMixin
 
 
 #=============User table==================
-class User(db.Model):
+class User(db.Model, UserMixin):
 	id = db.Column(db.Integer, primary_key=True)
 	first_name = db.Column(db.String(120), nullable=False)
 	last_name = db.Column(db.String(120), nullable=False)
@@ -73,6 +73,24 @@ class Product(db.Model):
 	timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 	image_name = db.Column(db.String(), nullable=False)
 
+	def to_json(self):
+		return {
+			"id": self.id,
+			"name": self.name,
+			"description": self.description,
+			"price": self.price,
+			"food_and_Grocery": self.food_and_Grocery,
+			"mobilePhones_and_Tablets": self.mobilePhones_and_Tablets,
+			"electronics": self.electronics,
+			"sports": self.sports,
+			"home_Furniture_and_Appliances": self.home_Furniture_and_Appliances,
+			"fashion": self.fashion,
+			"health_and_Beauty": self.health_and_Beauty,
+			"toys": self.toys,
+			"timestamp": self.timestamp,
+			"image_name": self.image_name,
+		}
+
 
 #=============Cart table==================
 class Cart(db.Model):
@@ -81,6 +99,14 @@ class Cart(db.Model):
 	user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 	timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
+	def to_json(self):
+		return {
+			"id": self.id,
+			"product_id": self.product_id,
+			"user_id": self.user_id,
+			"timestamp": self.timestamp
+		}
+
 
 #=============Wishlist table==================
 class WishList(db.Model):
@@ -88,6 +114,14 @@ class WishList(db.Model):
 	product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
 	user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 	timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+	def to_json(self):
+		return {
+			"id": self.id,
+			"product_id": self.product_id,
+			"user_id": self.user_id,
+			"timestamp": self.timestamp
+		}
 
 
 #=============Orders table==================
@@ -105,3 +139,16 @@ class Orders(db.Model):
 	#==============Method for generating unique order names==================
 	def generate_order_name(self):
 		self.order_name = f"ORDER-{current_user.id}{uuid.uuid4().hex[:10].upper()}"
+
+	def to_json(self):
+		return {
+			"id": self.id,
+			"user_id": self.user_id,
+			"username": self.username,
+			"order_name": self.order_name,
+			"order_items": self.order_items,
+			"status": self.status,
+			"delivery_details": self.delivery_details,
+			"total_price": self.total_price,
+			"timestamp": self.timestamp
+		}

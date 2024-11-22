@@ -1,31 +1,38 @@
 import React, {useState, useEffect} from 'react';
 import {BrowserRouter as Router, Route, Switch} from 'react-router-dom';
 import LoginForm from './components/auth/Login';
-import Navbar from './components/views/Navbar';
 import RegisterForm from './components/auth/Register';
+import Navbar from './components/views/Navbar';
+import HomePage from './components/views/Home';
 
 
 const App = () => {
 
-  const [users, setUsers] = useState([])
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
-  // useEffect(() ={
-    
-  // })
+  const fetchLoginStatus = async () => {
+    const response = await fetch('http://localhost:5000/auth/is_user_logged_in');
+    const data = response.json()
+    setIsLoggedIn(data.message)
+  }
+
+  useEffect(() => {
+    fetchLoginStatus()
+  })
 
   return (
     <Router>
       <div>
-        <Navbar />
+        <Navbar isLoggedIn={isLoggedIn} fetchLoginStatus={fetchLoginStatus}/>
         <Switch>
           <Route exact path='/'>
-            <h1>Home</h1>
+            <HomePage isLoggedIn={isLoggedIn} fetchLoginStatus={fetchLoginStatus} />
           </Route>
           <Route exact path='/register'>
-            <RegisterForm />
+            <RegisterForm isLoggedIn={isLoggedIn} fetchLoginStatus={fetchLoginStatus}/>
           </Route>
           <Route exact path='/login'>
-            <LoginForm />
+            <LoginForm isLoggedIn={isLoggedIn} fetchLoginStatus={fetchLoginStatus}/>
           </Route>
         </Switch>
       </div>
