@@ -1,9 +1,22 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 from .models import User
 from . import db
-from flask_login import login_user, current_user
 
 auth = Blueprint('auth', __name__)
+
+@auth.route('/get_current_user', methods=['GET'])
+def get_current_user():
+	try:
+		user_id = session['user_id']
+		if not user_id:
+			return jsonify({"message": "Unauthorized"}), 401
+		user = db.session.get(User, user_id)
+		if user:
+			return jsonify(user.to_json()), 200
+
+	except KeyError:
+		return jsonify({"message": "User not found"}), 404
+
 
 @auth.route('/get_users', methods=['GET'])
 def get_users():
@@ -24,7 +37,10 @@ def register():
 	db.session.add(new_user)
 	db.session.commit()
 
-	login_user(new_user, remember=True)
+	user = db.session.execute(db.select(User).filter_by(email=email)).scalar()
+
+	session['user_id'] = user.id
+
 
 	return jsonify({"message": "Account successfuly created"})
 	
@@ -34,15 +50,13 @@ def register():
 def login():
 	email = request.json.get("email")
 	user = db.session.execute(db.select(User).filter_by(email=email)).scalar()
-	if user.verify_password(request.json.get("password")):
-		login_user(user, remember=True)
-		return jsonify({"message": "Successfuly logged in"}), 200
-	else:
-		return jsonify({"message": "Incorrect email or password. Try again"}), 401
+	if not user or not user.verify_password(request.json.get("password")):
+		return jsonify({"message": "Invalid email or password."}), 401
 
-@auth.route('/is_user_logged_in')
-def is_user_logged_in():
-	return jsonify({'message': current_user.is_authenticated})
+
+	session['user_id'] = user.id
+	print(f"User session Id: {session.get('user_id')}", flush=True)
+	return jsonify({"message": "Successfully logged in"}), 200
 
 
 # @auth.route('/logout')

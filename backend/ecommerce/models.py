@@ -4,10 +4,12 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import uuid
 from flask_login import UserMixin
 
+def get_uuid():
+	return uuid.uuid4().hex
 
 #=============User table==================
 class User(db.Model, UserMixin):
-	id = db.Column(db.Integer, primary_key=True)
+	id = db.Column(db.Integer, primary_key=True, unique=True, default=(get_uuid))
 	first_name = db.Column(db.String(120), nullable=False)
 	last_name = db.Column(db.String(120), nullable=False)
 	email = db.Column(db.String(50), unique=True, nullable=False)
@@ -30,12 +32,7 @@ class User(db.Model, UserMixin):
 			"firstName": self.first_name,
 			"lastName": self.last_name,
 			"email": self.email,
-			"password": self.password,
 			"timestamp": self.timestamp,
-			"cart": self.cart,
-			"wishList": self.wish_list,
-			"orders": self.orders,
-			"role": self.role,
 			"address": self.address,
 			"address2": self.address2,
 			"city": self.city,
